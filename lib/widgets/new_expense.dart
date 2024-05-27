@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:expenses_tracker/models/expense.dart';
 
@@ -31,13 +34,22 @@ class _NewExpenseState extends State<NewExpense> {
     });
   }
 
-  void _submitExpenseData() {
-    final enteredAmount = double.tryParse(_amountController.text);
-    final amountIsInvalid = enteredAmount == null || enteredAmount <= 0;
-
-    if (_titleController.text.trim().isEmpty ||
-        amountIsInvalid ||
-        _selectedDate == null) {
+  void _showDialog() {
+    if (Platform.isIOS) {
+      showCupertinoDialog(
+          context: context,
+          builder: (ctx) => CupertinoAlertDialog(
+                title: const Text('Invalid Input'),
+                content: const Text(
+                    'Please make sure a valid title, amount, date and category was entered.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('Okay'),
+                  ),
+                ],
+              ));
+    } else {
       showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
@@ -51,6 +63,17 @@ class _NewExpenseState extends State<NewExpense> {
                   ),
                 ],
               ));
+    }
+  }
+
+  void _submitExpenseData() {
+    final enteredAmount = double.tryParse(_amountController.text);
+    final amountIsInvalid = enteredAmount == null || enteredAmount <= 0;
+
+    if (_titleController.text.trim().isEmpty ||
+        amountIsInvalid ||
+        _selectedDate == null) {
+      _showDialog();
       return;
     }
     widget.onAddExpense(
@@ -78,7 +101,7 @@ class _NewExpenseState extends State<NewExpense> {
       height: double.infinity,
       child: SingleChildScrollView(
         child: Padding(
-          padding:  EdgeInsets.fromLTRB(16, 16, 16, keyBoardSpace + 16),
+          padding: EdgeInsets.fromLTRB(16, 16, 16, keyBoardSpace + 16),
           child: Column(
             children: [
               TextField(
@@ -89,7 +112,6 @@ class _NewExpenseState extends State<NewExpense> {
                 ),
               ),
               Row(
-                
                 children: [
                   Expanded(
                     child: TextField(
